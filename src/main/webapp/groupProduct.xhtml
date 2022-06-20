@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * @project : SpringNeo4j 
+ * @author  : Duc Tung
+ * @created : 6/18/2022, Saturday
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core" xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+  <h:head>
+    <title> Group Product </title>
+    <h:outputStylesheet library="webjars" name="primeflex/2.0.0/primeflex.min.css" />
+  </h:head>
+  <h:body>
+    <h:form id="form">
+      <p:growl id="messages" showDetail="true"/>
+       <div class="box">
+           <div class="p-grid p-jc-center p-ai-center vertical-container">
+               <div class="p-col-12 p-sm-10 p-md-10 p-lg-10 p-xl-10">
+                 <p:card>
+
+                   <p:toolbar style="padding: 5px">
+                     <p:toolbarGroup>
+                        <p:commandButton
+                          title="add new" icon="pi pi-plus"
+                          styleClass="ui-button-success"
+                           onclick="PF('dialogGroupProduct').show()">
+                           <p:ajax resetValues="true" update="form:formGroupProduct"/>
+                         </p:commandButton>
+                     </p:toolbarGroup>
+                   </p:toolbar>
+
+                   <p:dataTable
+                     id="tableGroupProduct" widgetVar="tableGroupProduct"
+                     scrollHeight="350px" scrollable="true" size="small"
+                     paginator="true" paginatorPosition="bottom" rows="8"
+                     value="#{groupProductController.findAll()}" var="gproduct">
+
+                     <p:column  headerText="Product Group Code" sortBy="#{gproduct.code}" style="font-size: 14px">
+                       <h:outputText value="#{gproduct.code}"/>
+                     </p:column>
+                     <p:column headerText="Product Group Name" sortBy="#{gproduct.name}" style="font-size: 14px">
+                       <h:outputText value="#{gproduct.name}"/>
+                     </p:column>
+
+                     <ui:param name="s" value="#{groupProductController.fetch(gproduct.supplier)}"/>
+                     <p:column headerText="Supplier" sortBy="#{s.supplierName}" style="font-size: 14px">
+                       <h:outputText value="#{s.supplierName}"/>
+                     </p:column>
+                     <p:column exportable="false">
+
+                       <p:commandButton
+                         icon="pi pi-pencil" styleClass="p-mr-2 edit-button rounded-button ui-button-success"
+                         update="form:formGroupProduct" oncomplete="PF('dialogGroupProduct').show()"
+                         action="#{groupProductController.findOne(gproduct.id)}" process="@this">
+                         <p:ajax update="form:formGroupProduct form:code form:name form:supplier"/>
+                       </p:commandButton>
+
+                       <p:commandButton
+                         icon="pi pi-trash" styleClass="rounded-button ui-button-danger"
+                         update="tableGroupProduct"
+                         action="#{groupProductController.delete(gproduct.id)}" process="@this" >
+                         <p:confirm
+                          type="popup" header="Confirmation" message="Do you want to delete this record?" icon="pi pi-info-circle"/>
+                         <p:confirmPopup global="true">
+                           <p:commandButton value="No" type="button" styleClass="ui-confirm-popup-no ui-button-flat"/>
+                           <p:commandButton value="Yes" type="button" styleClass="ui-confirm-popup-yes" />
+                         </p:confirmPopup>
+                       </p:commandButton>
+
+                     </p:column>
+                   </p:dataTable>
+                   <p:dialog
+                     header="Group Product" id="dialogGroupProduct"
+                     widgetVar="dialogGroupProduct" modal="true"
+                     minHeight="300" width="350" showEffect="fade">
+
+                     <p:outputPanel id="formGroupProduct" styleClass="ui-fluid">
+                       <div class="p-field">
+                         <label for="code">Code</label>
+                         <p:inputText
+                           id="code" type="text"
+                           readonly="#{groupProductController.groupProduct.id != null}"
+                           required="true" requiredMessage="required field code"
+                           value="#{groupProductController.groupProduct.code}">
+                         </p:inputText>
+                         <p:message id="msgValidCode" for="code" display="text"/>
+                       </div>
+                       <div class="p-field">
+                         <label for="name">Name</label>
+                         <p:inputText
+                           id="name" type="text"
+                           required="true" requiredMessage="required field name"
+                           value="#{groupProductController.groupProduct.name}">
+                         </p:inputText>
+                           <p:message for="name" display="text"/>
+                       </div>
+                       <div class="p-field">
+                         <label for="name">Supplier</label>
+                         <p:selectOneMenu id="supplier" value="#{groupProductController.supplierId}" filter="true"
+                            required="true" requiredMessage="require field supplier">
+
+                             <f:selectItem
+                               itemValue="#{groupProductController.supplier != null ? groupProductController.supplier.id : ''}"
+                               itemLabel="#{groupProductController.supplier != null ? groupProductController.supplier.name : 'Select one'}"/>
+
+                             <f:selectItems
+                               value="#{groupProductController.findAllSupplier()}"
+                               var="p" itemLabel="#{p.name}" itemValue="#{p.id}"/>
+
+                           </p:selectOneMenu>
+                         <p:message for="supplier" display="text"/>
+                       </div>
+                     </p:outputPanel>
+                       <f:facet name="footer">
+                         <p:commandButton value="Save" style="width: 5rem"
+                           actionListener="#{groupProductController.save()}"
+                           update="form:formGroupProduct form:tableGroupProduct" process="formGroupProduct @this"
+                         />
+                       </f:facet>
+                   </p:dialog>
+                 </p:card>
+               </div>
+           </div>
+       </div>
+    </h:form>
+  </h:body>
+</html>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Created by IntelliJ IDEA.
+  User: Duc Tung
+  Date: 6/13/2022
+  Time: 8:27 AM
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core" xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+    <title>Dashboard</title>
+</h:head>
+
+<h:body>
+    <h:form>
+        <h:panelGrid columns="4" cellpadding="7">
+            <p:commandButton value="Quản lý Nhóm Sản Phẩm" action="/groupProduct.xhtml?faces-redirect=true"/>
+            <p:commandButton value="Quản lý Sản Phẩm" action="/product.xhtml?faces-redirect=true"/>
+        </h:panelGrid>
+    </h:form>
+</h:body>
+</html>

@@ -1,0 +1,73 @@
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:neo4j="http://www.springframework.org/schema/data/neo4j"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/task
+       http://www.springframework.org/schema/task/spring-task-3.0.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/data/neo4j
+        http://www.springframework.org/schema/data/neo4j/spring-neo4j.xsd
+        http://www.springframework.org/schema/tx
+         http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd">
+  <task:annotation-driven/>
+  <context:annotation-config/>
+  <context:spring-configured/>
+  <context:component-scan base-package="com.felixvn.controller"/>
+  <context:component-scan base-package="com.felixvn.services.impl"/>
+  <context:component-scan base-package="com.felixvn.common"/>
+  <neo4j:repositories base-package="com.felixvn.repository"/>
+  <util:map id="configNeo4j">
+    <entry key="allow_store_upgrade" value="false"/>
+    <entry key="remote_shell_enabled" value="true"/>
+    <entry key="remote_shell_port" value="1381"/>
+    <entry key="online_backup_enabled" value="true"/>
+    <entry key="online_backup_server" value="127.0.0.1:6381"/>
+    <entry key="neostore.nodestore.db.mapped_memory" value="1024M"/>
+    <entry key="neostore.relationshipstore.db.mapped_memory" value="1024M"/>
+    <entry key="neostore.propertystore.db.mapped_memory" value="512M"/>
+    <entry key="neostore.propertystore.db.strings.mapped_memory" value="256M"/>
+    <entry key="neostore.propertystore.db.arrays.mapped_memory" value="128M"/>
+    <entry key="neostore.propertystore.db.index.keys.mapped_memory" value="64M"/>
+    <entry key="neostore.propertystore.db.index.mapped_memory" value="64M"/>
+     		<entry key="node_keys_indexable" value="CodeSupplier,ProductGroupCode,CodeProduct,NameProduct"/>
+    <entry key="node_auto_indexing" value="true"/>
+    <entry key="relationship_auto_indexing" value="true"/>
+  </util:map>
+  <bean id="graphDbFactory" class="org.neo4j.graphdb.factory.GraphDatabaseFactory"/>
+  <bean id="graphDbBuilder" factory-bean="graphDbFactory" factory-method="newEmbeddedDatabaseBuilder">
+    <constructor-arg value="D:\Duc Tung\working\database\neo4j\sample.db"/>
+  </bean>
+  <bean id="graphDbBuilderFinal" factory-bean="graphDbBuilder" factory-method="setConfig">
+    <constructor-arg ref="configNeo4j"/>
+  </bean>
+  <bean id="graphDatabaseService" factory-bean="graphDbBuilderFinal" factory-method="newGraphDatabase" destroy-method="shutdown"/>
+  <neo4j:config graphDatabaseService="graphDatabaseService" base-package="com.felixvn.entity"/>
+  <bean id="serverWrapper" class="org.neo4j.server.WrappingNeoServerBootstrapper" init-method="start" destroy-method="stop">
+    <constructor-arg ref="graphDatabaseService"/>
+  </bean>
+  <!--  transaction configuration  -->
+  <bean id="neo4jTransactionManagerService" class="org.neo4j.kernel.impl.transaction.SpringTransactionManager">
+    <constructor-arg ref="graphDatabaseService"/>
+  </bean>
+  <bean id="neo4jUserTransactionService" class="org.neo4j.kernel.impl.transaction.UserTransactionImpl">
+    <constructor-arg ref="graphDatabaseService"/>
+  </bean>
+  <bean id="neo4jTransactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+    <property name="transactionManager" ref="neo4jTransactionManagerService"/>
+    <property name="userTransaction" ref="neo4jUserTransactionService"/>
+  </bean>
+  <bean id="typeSafetyPolicy" class="org.springframework.data.neo4j.support.typesafety.TypeSafetyPolicy">
+    <constructor-arg type="org.springframework.data.neo4j.support.typesafety.TypeSafetyOption">
+      <value>RETURNS_NULL</value>
+    </constructor-arg>
+  </bean>
+  <tx:annotation-driven transaction-manager="neo4jTransactionManager"/>
+</beans>

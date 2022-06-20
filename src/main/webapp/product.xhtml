@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * @project : SpringNeo4j 
+ * @author  : Duc Tung
+ * @created : 6/19/2022, Sunday
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui" xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+  <h:head>
+    <title> Title </title>
+    <h:outputStylesheet library="webjars" name="primeflex/2.0.0/primeflex.min.css" />
+  </h:head>
+  <h:body>
+    <h:form id="form">
+      <p:growl id="messages" showDetail="true"/>
+      <div class="p-grid p-jc-center p-ai-center vertical-container">
+        <div class="p-col-12 p-sm-10 p-md-10 p-lg-10 p-xl-10">
+          <p:card>
+            <p:toolbar style="padding: 5px">
+              <p:toolbarGroup>
+
+                <p:commandButton
+                  title="add new" icon="pi pi-plus"
+                  styleClass="ui-button-success"
+                  onclick="PF('dialogProduct').show()">
+                  <p:ajax resetValues="true" update="form:formProduct"/>
+                </p:commandButton>
+              </p:toolbarGroup>
+            </p:toolbar>
+            <p:dataTable
+              id="tableProduct" widgetVar="tableProduct"
+              scrollHeight="350px" scrollable="true" size="small"
+              paginator="true" paginatorPosition="bottom" rows="8"
+              value="#{productController.findAll()}" var="product">
+
+              <p:column  headerText="Product Code" sortBy="#{product.code}" style="font-size: 14px">
+                <h:outputText value="#{product.code}"/>
+              </p:column>
+
+              <p:column headerText="Product Name" sortBy="#{product.name}" style="font-size: 14px">
+                <h:outputText value="#{product.name}"/>
+              </p:column>
+
+              <p:column headerText="Prices" sortBy="#{product.prices}" style="font-size: 14px">
+                <h:outputText value="#{product.prices}"/>
+              </p:column>
+
+              <p:column headerText="Currency" sortBy="#{product.currency}" style="font-size: 14px">
+                <h:outputText value="#{product.currency}"/>
+              </p:column>
+
+              <p:column headerText="Unit" sortBy="#{product.unit}" style="font-size: 14px">
+                <h:outputText value="#{product.unit}"/>
+              </p:column>
+
+              <ui:param name="g" value="#{productController.fetch(product.productGroup,product.supplier)}"/>
+
+              <p:column headerText="Group" sortBy="#{g.groupName}" style="font-size: 14px">
+                <h:outputText value="#{g.groupName}"/>
+              </p:column>
+
+              <p:column headerText="Supplier" sortBy="#{g.supplierName}" style="font-size: 14px">
+                <h:outputText value="#{g.supplierName}"/>
+              </p:column>
+
+                <p:column exportable="false">
+
+                  <p:commandButton
+                          icon="pi pi-pencil" styleClass="p-mr-2 edit-button rounded-button ui-button-success"
+                          update="form:formProduct" oncomplete="PF('dialogProduct').show()"
+                          action="#{productController.findOne(product.id)}" process="@this">
+                    <p:ajax update="form:formProduct"/>
+                  </p:commandButton>
+
+                  <p:commandButton
+                          icon="pi pi-trash" styleClass="rounded-button ui-button-danger"
+                          update="tableProduct"
+                          action="#{productController.delete(product.id)}" process="@this" >
+                    <p:confirm
+                            type="popup" header="Confirmation" message="Do you want to delete this record?" icon="pi pi-info-circle"/>
+                    <p:confirmPopup global="true">
+                      <p:commandButton value="No" type="button" styleClass="ui-confirm-popup-no ui-button-flat"/>
+                      <p:commandButton value="Yes" type="button" styleClass="ui-confirm-popup-yes" />
+                    </p:confirmPopup>
+                  </p:commandButton>
+
+                </p:column>
+            </p:dataTable>
+            <p:dialog responsive="true"
+             header="Product" id="dialogProduct"
+             widgetVar="dialogProduct" modal="true"
+             minHeight="300" width="680" showEffect="fade">
+              <p:outputPanel id="formProduct" styleClass="ui-fluid">
+                <div class=" ui-fluid p-formgroup-inline">
+                  <div class="p-field p-mr-1 p-col">
+                    <label for="code">Code</label>
+                    <p:inputText
+                      id="code" type="text"
+                      readonly="#{productController.product.id != null}"
+                      required="true" requiredMessage="required field code"
+                      value="#{productController.product.code}">
+                    </p:inputText>
+                    <p:message id="msgValidCode" for="code" display="text"/>
+                  </div>
+                  <div class="p-field p-mr-1 p-col">
+                    <label for="name">Name</label>
+                    <p:inputText
+                      id="name" type="text"
+                      required="true" requiredMessage="required field name"
+                      value="#{productController.product.name}">
+                    </p:inputText>
+                    <p:message id="msgValidName" for="name" display="text"/>
+                  </div>
+                </div>
+                <div class="ui-fluid p-formgroup-inline">
+                  <div class="p-field p-mr-1 p-col">
+                    <label for="prices">Prices</label>
+                    <p:inputNumber id="prices" value="#{productController.product.prices}" symbol="vnd"
+                      required="true" requiredMessage="required field prices"
+                      symbolPosition="s" decimalSeparator="," thousandSeparator="." decimalPlaces="3" minValue="0" />
+                    <p:message for="prices" display="text"/>
+                  </div>
+                  <div class="p-field p-mr-1 p-col">
+                    <label for="currency">Currency</label>
+                    <p:selectOneMenu
+                      id="currency" value="#{productController.product.currency}"
+                      required="true" requiredMessage="require field currency">
+
+                        <f:selectItem itemValue="" itemLabel="Select one"/>
+                        <f:selectItem itemValue="vnd" itemLabel="vnd"/>
+                    </p:selectOneMenu>
+                    <p:message for="currency" display="text"/>
+                  </div>
+                  <div class="p-field p-mr-1 p-col">
+                    <label for="unit">Unit</label>
+                    <p:selectOneMenu
+                      id="unit" value="#{productController.product.unit}"
+                      required="true" requiredMessage="require field unit">
+                        <f:selectItem itemValue="" itemLabel="Select one"/>
+                        <f:selectItem itemValue="pce" itemLabel="pce"/>
+                    </p:selectOneMenu>
+                    <p:message for="unit" display="text"/>
+                  </div>
+                </div>
+                <div class="ui-fluid p-formgroup-inline">
+                  <div class="p-field p-mr- p-col">
+                    <label for="group">Group</label>
+                    <p:selectOneMenu id="group" value="#{productController.groupId}" filter="true"
+                      required="true" requiredMessage="require field supplier">
+                      <f:selectItem
+                        itemValue="#{productController.groupProduct != null ? productController.groupProduct.id : ''}"
+                        itemLabel="#{productController.groupProduct != null ? productController.groupProduct.name : 'Select one'}"/>
+
+                      <f:selectItems
+                        value="#{groupProductController.findAll()}"
+                        var="p" itemLabel="#{p.name}" itemValue="#{p.id}"/>
+                      <f:ajax event="itemSelect" update=":supplier" listener="#{productController.onSelectGroupProduct()}"/>
+                    </p:selectOneMenu>
+                    <p:message for="group" display="text"/>
+                  </div>
+                  <div class="p-field p-mr1 p-col">
+                    <label for="supplier">Supplier</label>
+                    <p:inputText id="supplier" type="text" readonly="true" value="#{productController.supplierName}"/>
+                  </div>
+                </div>
+              </p:outputPanel>
+              <f:facet name="footer">
+                <p:commandButton value="Save" style="width: 5rem"
+                   actionListener="#{productController.save()}"
+                   update="form:formProduct form:tableProduct" process="formProduct @this"
+                />
+              </f:facet>
+            </p:dialog>
+          </p:card>
+        </div>
+      </div>
+    </h:form>
+</h:body>
+</html>
